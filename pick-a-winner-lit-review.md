@@ -57,31 +57,41 @@ The ICH E9(R1) addendum on estimands introduces critical considerations for seam
 
 ### 2.1 Summary Table
 
-| # | Authors | Year | Journal | Endpoints | Method Summary | Simulation Details |
-|---|---------|------|---------|-----------|---------------|-------------------|
-| 1 | **Jin M, Zhang P** | 2021 | *Stat Methods Med Res* | Intermediate endpoint (unspecified categorical/TTE) + multiple primary endpoints | Adaptive seamless Phase 2-3 with multiple endpoints; expand Phase 2 into Phase 3 based on intermediate endpoint; multiple test procedure controls FWER | Conducted to confirm FWER control; oncology example |
-| 2 | **Jenkins M, Stone A, Jennison C** | 2011 | *Pharm Stat* | Correlated time-to-event endpoints (PFS for interim, OS for final) | Adaptive seamless II/III with subpopulation selection; allows trial to continue in all patients or subgroup(s) as co-primary; controls type I error <2.5% with correlated **different** TTE endpoints | Operating characteristics described; oncology setting |
-| 3 | **Bretz F, Schmidli H, König F, Racine A, Maurer W** | 2006 | *Biom J* | Any (binary, continuous, TTE) | Foundational framework for confirmatory seamless designs; dose/ hypothesis selection at interim; flexible test procedures (Simes, Dunnett, Bonferroni); combination test and conditional error approaches | Power study comparing test procedures |
-| 4 | **Schmidli H, Bretz F, Racine A, Maurer W** | 2006 | *Biom J* | Binary, time-to-event, continuous | Applications of Bretz et al. (2006) framework; examples from drug development; practical implementation issues including treatment and subgroup selection | Real trial examples with simulations |
-| 5 | **Stallard N, Todd S** | 2003 | *Stat Med* | Any (binary, normal, failure-time via efficient score) | **Seminal pick-the-winner paper**; two-stage design; select most promising treatment at first interim; uses efficient score statistic; sample size determination for specified power | Computational approach; binary, normal, failure-time data considered |
-| 6 | **Stallard N, Todd S** (extended with Kelly et al.) | 2008 | *Stat Med* | Any (extension of 2003) | Group-sequential with treatment selection; allows >1 experimental treatment to continue; controls FWER strongly when number of treatments pre-specified; simulation shows conservatism when number is data-driven | Simulation studies for strong FWER control |
-| 7 | **Friede T, Stallard N** | 2008 | *Biom J* | Any primary endpoint | **Comparison of 4 methods**: (1) classical Dunnett test, (2) adaptive Dunnett (conditional error approach), (3) combination test approach, (4) group-sequential framework. No method dominates; scenarios favoring each are described | Extensive simulation comparing power across methods and scenarios |
-| 8 | **Sun LZ, Li W, Chen C, Zhao J** | 2020 | *Stat Biopharm Res* | **PFS/ORR (interim) → OS (final)** | **Critically important for this project.** Uses intermediate endpoints (PFS, ORR) for adaptive decisions in seamless designs; benefit-cost ratio objective criteria; two real design examples: operationally seamless with dose-selection and statistically seamless **2-in-1 design** | Based on real trial designs; addresses why seamless designs are rarely used due to OS waiting time |
-| 9 | **Dixit V, et al.** | 2021 | *J Biopharm Stat* | Time-to-event (same or different endpoints across stages) | MAMS for time-to-event outcomes; generalized Dunnett procedure for FWER when same endpoint; modifications when endpoints differ; handles **delayed treatment effects** (non-proportional hazards) | Performance under proportional and non-proportional hazards |
-| 10 | **Choodari-Oskooei B, et al.** | 2020 | *Clin Trials* | TTE, binary, continuous | Platform trial error rates; analytical formula for correlation of test statistics when adding arms; Šidák correction when correlation < 0.30 | Verified analytical derivations via simulation |
-| 11 | **Sydes MR, et al. (STAMPEDE)** | 2012 | *Trials* | FFS (interim) → OS (final) | **Landmark MAMS trial** in prostate cancer; 5 research arms + control; 3 intermediate stages (failure-free survival) + final stage (OS); stopped 2 arms for futility; added new arms mid-trial; **practical implementation** across 100+ centers | Operational experience — not a statistical methods paper |
-| 12 | **Friede T, Stallard N, Parsons N** | 2019 | *arXiv / R package asd* | Primary or early outcome | Flexible simulation model for treatment AND subgroup selection; **R package `asd`** extended for enrichment designs; accommodates early outcome for interim decisions | Worked examples in COPD and oncology |
-| 13 | **Broglio K, et al.** | 2024 | *Ther Innov Regul Sci* | Multiple endpoints | **Systematic review** of adaptive seamless designs in late-phase oncology; catalog of real trials | Systematic review methodology |
-| 14 | **Zhu H, et al.** | 2024 | *Commun Stat Simul Comput* | Binary (response) | ASD with sequential estimation-adjusted urn (SEU) model for response-adaptive randomization; dual challenge of multiplicity + non-independent assignments; type I error control | Numerical studies confirm type I error control and power preservation |
-| 15 | **Zhang EP, Jin M** | 2025 | *Stat Biopharm Res* | ORR/PFS (interim) → OS (final) | **Multi-stage group sequential Phase 2/3** with dose selection; inverse normal combination test + closed testing + group sequential boundaries; cohort-separation design (Cohort 1: pre-selection, Cohort 2: post-selection); explicit covariance formula for combined test statistic across stages | Type I error control at 0.025 confirmed; compares favorably to traditional Phase 2+3 approach |
-| 16 | **Zhong W, Liu J, Wang C** | 2025 | *Stat Med* | Binary surrogate (ORR) → TTE (OS/PFS) | **Analytic derivation of ρ(ORR, OS)** under PH; FWER inflation formula as function of ρ and selection threshold Δ; upper bound for ρ under proportional hazards with censoring | FWER inflation characterized; software implementing drop-the-losers design provided |
-| 17 | **Wu J, Li Y, Zhu L** | 2023 | *Stat Med* | Continuous (normal) | SCPRT-based group sequential MAMS; analytical futility/efficacy boundaries for arbitrary stages and arms; avoids exponential complexity of Magirr et al. boundary search | Dunnett correction under global null; continuous outcomes only |
-| 18 | **Magirr D, Jaki T, Whitehead J** | 2012 | *Biometrika* | Normal (continuous) | **Generalized Dunnett test for MAMS**; efficacy and futility boundaries via conditional independence given control mean; applicable to any number of arms/stages; strong FWER control under global null | Boundary computation via numerical integration + one-dimensional search |
-| 19 | **Bauer P, Posch M** | 2004 | *Stat Med* | Any | **Origin of the Bauer-Posch bias result**; modification, adaptation and suboptimal combination tests in adaptive designs; shows using same patients' short-term and long-term data inflates type I error | Theoretical derivation of bias; simulation confirmation |
-| 20 | **Dunnett CW** | 1955 | *JASA* | Continuous (normal means) | **Original Dunnett multiple comparison procedure**; comparing several treatments with a single control; foundation of the Dunnett-type adjustments used throughout the pick-a-winner literature | Tables of critical values for equal-sample-size case |
-| 21 | **Kelly PJ, Stallard N, Todd S** | 2005 | *J Biopharm Stat* | Normal (continuous) | **Adaptive group sequential design for phase II/III with treatment selection**; extends Stallard & Todd (2003) pick-the-winner to group-sequential confirmatory stage; inverse normal combination test for type I error control | Operating characteristics; comparison of design options |
-| 22 | **Mehta CR, Tsiatis AA** | 2001 | *Drug Inf J* | Time-to-event | **Flexible sample size considerations using information-based interim monitoring**; how to time interim analyses and re-estimate sample size when the primary endpoint is immature — exact situation in ORR→OS seamless designs | Information-based sample size re-estimation framework |
-| 23 | **Wang X, Chen M, Chu S, Fan R, Chan ISF** | 2023 | *Contemp Clin Trials* | Biomarker → efficacy (normal/TTE) | **Rank-based Dunnett adjustment** for seamless 2/3 with dose optimization; accounts for biomarker rank of selected dose + correlation ρ between biomarker and efficacy; uses inverse normal combination test with rank-adjusted p-values vs Šidák | FWER controlled at 0.025; uniformly higher power than Šidák and traditional Dunnett |
+**Table A — Foundational methods and early extensions**
+
+| # | Authors | Year | Journal | Endpoints | Key Contribution |
+|---|---------|------|---------|-----------|----------------|
+| 1 | Jin M, Zhang P | 2021 | *Stat Methods Med Res* | Intermediate + multiple primary | Adaptive seamless 2-3 with multiple endpoints; FWER control via closed testing |
+| 2 | **Jenkins M, Stone A, Jennison C** | 2011 | *Pharm Stat* | PFS→OS (TTE) | **Cohort-separation origin**; subpopulation selection with correlated TTE endpoints; Option A solves Bauer-Posch bias |
+| 3 | Bretz F, et al. | 2006 | *Biom J* | Any | Foundational framework for confirmatory seamless designs with hypothesis selection |
+| 4 | Schmidli H, et al. | 2006 | *Biom J* | Any | Applications of Bretz et al. framework; practical implementation |
+| 5 | **Stallard N, Todd S** | 2003 | *Stat Med* | Any (binary, normal, TTE) | ⭐ **Foundational pick-the-winner**; two-stage, K treatments → select best at interim via efficient score |
+| 6 | Stallard N, Todd S | 2008 | *Stat Med* | Any | Group-sequential with treatment selection; >1 treatment may continue |
+| 7 | Friede T, Stallard N | 2008 | *Biom J* | Any | Comparison of 4 methods: Dunnett, adaptive Dunnett, combination test, group-sequential |
+| 8 | **Sun LZ, et al.** | 2020 | *Stat Biopharm Res* | **PFS/ORR→OS** | **Critically important.** Benefit-cost ratio criteria; 2-in-1 design; addresses why seamless is rarely used |
+| 9 | Dixit V, et al. | 2021 | *J Biopharm Stat* | TTE (same or diff) | MAMS for TTE with delayed treatment effects (non-PH) |
+| 10 | Choodari-Oskooei B, et al. | 2020 | *Clin Trials* | TTE, binary, continuous | Platform trial error rates; correlation of test statistics when adding arms |
+| 11 | Sydes MR, et al. (STAMPEDE) | 2012 | *Trials* | FFS→OS | Landmark MAMS trial; 5 arms, 3 stages, practical implementation across 100+ centers |
+| 12 | Friede T, et al. | 2019 | *arXiv/asd* | Primary or early | R package `asd` for treatment AND subgroup selection simulation |
+
+**Table B — Modern pick-a-winner and related methods**
+
+| # | Authors | Year | Journal | Endpoints | Key Contribution |
+|---|---------|------|---------|-----------|----------------|
+| 13 | Broglio K, et al. | 2024 | *Ther Innov Regul Sci* | Multiple | Systematic review of adaptive seamless designs in late-phase oncology |
+| 14 | Zhu H, et al. | 2024 | *Commun Stat Simul Comput* | Binary | ASD with sequential estimation-adjusted urn for response-adaptive randomization |
+| 15 | **Zhang EP, Jin M** | 2025 | *Stat Biopharm Res* | **ORR/PFS→OS** | ⭐ **Primary method.** Multi-stage group sequential Phase 2/3; cohort-separation + INCT + closed testing + Dunnett |
+| 16 | **Zhong W, et al.** | 2025 | *Stat Med* | **ORR→OS** | ⭐ **ρ(ORR, OS) derivation** under PH; FWER inflation formula; DTL design with software |
+| 17 | Wu J, et al. | 2023 | *Stat Med* | Normal | SCPRT-based MAMS; analytical boundaries for any number of stages/arms |
+| 18 | Magirr D, et al. | 2012 | *Biometrika* | Normal | Generalized Dunnett test for MAMS; boundary computation via conditional independence |
+| 19 | Bauer P, Posch M | 2004 | *Stat Med* | Any | **Origin of Bauer-Posch bias**; shared short-term/long-term data inflates type I error |
+| 20 | Dunnett CW | 1955 | *JASA* | Normal means | Original Dunnett test; foundation of all multiplicity adjustments in this literature |
+| 21 | **Kelly PJ, et al.** | 2005 | *J Biopharm Stat* | Normal | Adaptive group sequential phase II/III with treatment selection; INCT for type I error |
+| 22 | Mehta CR, Tsiatis AA | 2001 | *Drug Inf J* | TTE | Information-based interim monitoring for immature endpoints |
+| 23 | **Wang X, et al.** | 2023 | *Contemp Clin Trials* | Biomarker→efficacy | **Rank-based Dunnett**; accounts for biomarker rank + correlation ρ; more powerful than Šidák |
+| 24 | **Hua K, et al.** | 2026 | *Stat Biopharm Res* | **ORR→PFS/OS** | **Closed testing + group-sequential p-values**; 8-hypothesis framework; independent increment argument |
+
+**Bold** = high priority for this project.
 
 ### 2.2 Detailed Notes on Key Papers
 
@@ -101,15 +111,18 @@ The ICH E9(R1) addendum on estimands introduces critical considerations for seam
 
 #### Paper #2: Jenkins, Stone & Jennison (2011) [211 citations]
 - **DOI:** 10.1002/pst.472
-- **Abstract retrieved** ☑ (full text not accessed)
-- **Core contribution:** Phase II/III design with subpopulation selection using correlated but **different** time-to-event endpoints (e.g., PFS at interim, OS at final). Methods control type I error < 2.5% when endpoints are correlated. Allows the trial to continue in all patients, a subpopulation, or both as co-primary populations.
-- **Critical for this project:** Establishes precedent for using **different correlated TTE endpoints** between stages, relevant to using ORR/DOR (short-term) → PFS/OS (long-term).
+- **Full text accessed** ☑ (PDF saved to refs/)
+- **Core contribution:** **Original cohort-separation framework** for adaptive seamless designs with correlated TTE endpoints. Uses PFS at interim for subpopulation selection, OS at final for confirmatory testing. Four decision paths: co-primary (F+S), subgroup-only, full-population-only, or stop. Controls FWER at < 2.5% via closed testing (Hochberg for H_F ∩ H_S) + inverse normal combination test.
+- **Key innovation (§5, Option A):** The solution to the Bauer-Posch problem: allocate all OS follow-up of stage-1 patients to stage-1 p-values (not stage-2). PFS data from stage 1 informs selection but does not enter the final test statistic. OS from stage-1 patients includes follow-up through stage 2. OS from stage-2 patients is calculated separately. The two sets of independent p-values are combined via inverse normal combination with pre-specified weights w₁, w₂ proportional to √(expected events).
+- **Decision rule (§4):** PFS hazard ratio thresholds (e.g., HR_F < 0.8 and HR_S < 0.6 → continue co-primary). Weights are fixed to match the co-primary case; this is a compromise since the actual number of events depends on which decision path is taken.
+- **Critical for this project:** Establishes the cohort-separation precedent that Zhang & Jin (2025) extends to dose selection. The intern should understand Option A (p.350) thoroughly — it's the blueprint for unbiased TTE testing after selection.
 
 #### Paper #5: Stallard & Todd (2003) [500+ citations estimated]
 - **DOI:** 10.1002/sim.1362
-- **Abstract retrieved** ☑ (full text not accessed)
-- **Core contribution:** The definitive "pick-the-winner" methodology. Two-stage design where the most promising of K experimental treatments is selected at the first interim. Uses the **efficient score** as test statistic, making binary, normal, or failure-time data analysis straightforward. Includes power/sample size determination.
-- **Foundation for this project:** The pick-the-winner mechanism is the central machinery we need.
+- **Full text accessed** ☑ (PDF saved to refs/)
+- **Core contribution:** ⭐ **Foundational pick-the-winner design.** Two-stage process: Stage 1 randomizes K treatments + control, selects the most promising via efficient score statistic (works for binary, normal, or failure-time data). Stage 2 continues with selected treatment + control. Final analysis includes all patients with exact multiplicity adjustment via multivariate normal distribution.
+- **Key method (§4 — binary endpoint):** Provides exact formulas for binary outcomes (Eq. 14-16). The selection-adjusted critical value c* satisfies P(max(Z₁,...,Z_K) > c* | global null) = α, where Z-statistics are bivariate normal due to the common control. For the final test: Z = (√n₁·Z₁ + √n₂·Z₂)/√(n₁+n₂), and the critical value is obtained from the (K+1)-dimensional MVN integral (Eq. 17).
+- **Foundation for this project:** The simplest complete pick-the-winner design. The intern should **reproduce Section 4 (binary results, Table II)** as their first simulation task — this validates the simulation engine on known results before extending to TTE endpoints.
 
 #### Paper #8: Sun, Li, Chen & Zhao (2020) [10 citations]
 - **DOI:** 10.1080/19466315.2019.1665578
@@ -608,19 +621,21 @@ This timeline replaces the original 8-week plan with a more realistic 10–12 we
 
 30. **Wang X, Chen M, Chu S, Fan R, Chan ISF.** A rank-based approach to improve the efficiency of inferential seamless phase 2/3 clinical trials with dose optimization. *Contemporary Clinical Trials*. 2023;132:107300. DOI: 10.1016/j.cct.2023.107300.
 
+31. **Hua K, Wang X, Luo X.** Multiplicity control in clinical trials with adaptive selection followed by group-sequential testing. *Statistics in Biopharmaceutical Research*. 2026. DOI: 10.1080/19466315.2026.2634636.
+
 ### Regulatory Guidance
 
-31. **ICH.** Addendum on Estimands and Sensitivity Analysis in Clinical Trials to the Guideline on Statistical Principles for Clinical Trials E9(R1). International Council for Harmonisation; 2019.
+32. **ICH.** Addendum on Estimands and Sensitivity Analysis in Clinical Trials to the Guideline on Statistical Principles for Clinical Trials E9(R1). International Council for Harmonisation; 2019.
 
-32. **FDA.** Adaptive Design Clinical Trials for Drugs and Biologics — Guidance for Industry. 2019.
+33. **FDA.** Adaptive Design Clinical Trials for Drugs and Biologics — Guidance for Industry. 2019.
 
-33. **FDA Oncology Center of Excellence.** Project Optimus: Reforming the dose selection paradigm in oncology. Ongoing initiative.
+34. **FDA Oncology Center of Excellence.** Project Optimus: Reforming the dose selection paradigm in oncology. Ongoing initiative.
 
 ### Surrogate Endpoint Literature
 
-34. **Buyse M, Michiels S, Sargent DJ, et al.** Integrating biomarkers in clinical trials. In: *Handbook of Statistics in Clinical Oncology*. 3rd ed. 2012.
+35. **Buyse M, Michiels S, Sargent DJ, et al.** Integrating biomarkers in clinical trials. In: *Handbook of Statistics in Clinical Oncology*. 3rd ed. 2012.
 
-35. **Prasad V, Kim C, Burotto M, Vandross A.** The strength of association between surrogate end points and survival in oncology: a systematic review of trial-level meta-analyses. *JAMA Internal Medicine*. 2015;175(8):1389-1398.
+36. **Prasad V, Kim C, Burotto M, Vandross A.** The strength of association between surrogate end points and survival in oncology: a systematic review of trial-level meta-analyses. *JAMA Internal Medicine*. 2015;175(8):1389-1398.
 
 ---
 
@@ -637,17 +652,29 @@ See §5.9 for the full 10–12 week implementation timeline. High-level summary:
 
 ## Appendix B: Notes on Papers Not Fully Reviewed
 
-The following papers are referenced from search results and citations but their full text was not accessed. Their inclusion here is based on abstract content only. **Marked papers should be read in full before finalizing the intern's work plan.**
+Many papers referenced in this review were initially accessed by abstract only. Since the initial review, the following full-text PDFs have been obtained (stored in `refs/`):
 
-- ☐ **Sun et al. (2020)** — HIGH PRIORITY: Most directly relevant to this project
+| Paper | File |
+|-------|------|
+| Stallard & Todd (2003) | `stallard2003-pick-winner.pdf` |
+| Jenkins et al. (2011) | `jenkins2011-cohort-separation.pdf` |
+| Magirr et al. (2012) — Biometrika | `magirr2012-biometrika-generalized-dunnett.pdf` |
+| Zhang & Jin (2025) | `zhang2025-mams-phase2-3.pdf` |
+| Zhong et al. (2025) — DTL | `zhong2025-drop-the-losers.pdf` |
+| Hua, Wang & Luo (2026) | `hua2026-multiplicity-adaptive-selection.pdf` |
+| Wang et al. (2023) — rank-based Dunnett | `wang2023-rank-based-dunnett.pdf` |
+| Bauer & Posch (2004) — letter | `bauer2004-letter-schaefer-muller.pdf` |
+
+**Papers still lacking full-text PDFs in `refs/`** (abstract-only entries in the review):
+
 - ☐ **Jin & Zhang (2021)** — HIGH PRIORITY: Multiple endpoint framework
-- ☐ **Jenkins et al. (2011)** — HIGH PRIORITY: Correlated TTE endpoints
+- ☐ **Sun et al. (2020)** — HIGH PRIORITY: 2-in-1 design, benefit-cost ratio
 - ☐ **Bretz et al. (2006)** — HIGH PRIORITY: Foundational framework
-- ☐ **Broglio et al. (2024)** — MODERATE PRIORITY: Systematic review for landscape
 - ☐ **Friede & Stallard (2008)** — HIGH PRIORITY: Method comparison
-- ☐ **Dixit et al. (2021)** — For TTE + non-PH considerations
-- ☐ **Spivack et al. (2019)** — For dose modification scenarios
-- ☐ **Zhu et al. (2024)** — For response-adaptive randomization approaches
+- ☐ **Dixit et al. (2021)** — TTE + non-PH considerations
+- ☐ **Broglio et al. (2024)** — MODERATE: Systematic review
+- ☐ **Spivack et al. (2019)** — Dose modification scenarios
+- ☐ **Zhu et al. (2024)** — Response-adaptive randomization
 
 ---
 

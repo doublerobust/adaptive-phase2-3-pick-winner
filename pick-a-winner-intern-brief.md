@@ -22,6 +22,7 @@ Traditional oncology development runs Phase II and III as separate sequential tr
 | 4 | Magirr et al. | 2012 | *Biometrika* | Generalized Dunnett test for MAMS with normal endpoints; boundary computation via conditional independence. TTE extension in Zhang & Jin (2025). |
 | 5 | Wu et al. | 2023 | *Stat Med* | SCPRT-based MAMS. Analytical futility/efficacy boundaries for arbitrary stages/arms. Continuous outcomes only. |
 | 6 | Wang et al. | 2023 | *Contemp Clin Trials* | Rank-based Dunnett adjustment; accounts for biomarker rank + correlation ρ; more powerful than Šidák when selected dose is not best biomarker responder. |
+| 7 | Hua et al. | 2026 | *Stat Biopharm Res* | Closed testing + group-sequential p-values after ORR-based selection; 8-hypothesis design (2 trt × 2 pop × 2 endpoints); independent increment argument for X[1]/X[2]. |
 | 6 | Zhang & Jin | 2025 | *Stat Biopharm Res* | **Directly addresses your setting.** Multi-stage group sequential Phase 2/3 with dose selection via ORR/PFS, OS as final. Cohort-separation + inverse normal combination + closed testing. |
 
 **Stallard & Todd (2003).** The foundational design: K experimental arms vs control, select the most promising at interim via efficient score statistic, continue with selected arm + control. All patients from both stages included in the final test with multiplicity adjustment. Handles binary, normal, or failure-time data uniformly. Start here — implement this two-stage design first.
@@ -35,6 +36,8 @@ Traditional oncology development runs Phase II and III as separate sequential tr
 **Wu et al. (2023).** SCPRT-based group sequential MAMS yielding analytical boundaries for any number of stages and arms, avoiding the exponential complexity of Magirr et al.'s search. Continuous outcomes only; boundary structure can be adapted for TTE.
 
 **Wang et al. (2023).** Rank-based Dunnett adjustment for seamless 2/3 designs where dose selection uses a biomarker with correlation ρ to the efficacy endpoint. If the selected dose's biomarker rank is r < m (not the best responder), multiplicity adjustment reduces dimension, improving power vs Šidák. The correlation matrix (Table 1) gives: corr(Eⱼ, Eₚ) = 1/2; corr(Eⱼ, Bⱼ) = ρ; corr(Eⱼ, Bₚ) = ρ/2 for j ≠ p. Uses inverse normal combination test with rank-adjusted p-values. Very practical for simulation—the correlation structure is directly implementable.
+
+**Hua, Wang & Luo (2026).** Two-stage design where ORR at IA1 drives a 5-branch selection tree (Figure 1: stop, enrich BM+, select treatment, etc.). After selection, PFS/OS tested via group-sequential with 3 additional looks. Uses **closed testing + group-sequential p-values** rather than cohort-separation. Argues via the log-rank independent increment property that Stage-1 and Stage-2 test statistics are independent even with shared patients — a different justification than Zhang & Jin's cohort-separation. The 8-hypothesis structure (2 treatments × 2 populations × 2 endpoints) is more complex than our setting, but the multiplicity machinery is directly portable.
 
 **Zhang & Jin (2025).** Your most important paper. Extends two-stage seamless to **multi-stage group sequential** with TTE endpoints and dose selection via ORR/PFS. Key innovations: (1) **cohort-separation** — Cohort 1 (pre-selection, all arms) and Cohort 2 (post-selection, selected arm + control) combined via inverse normal combination with weights proportional to expected events; (2) **explicit covariance formula** for combined test statistics across stages; (3) **closed testing + Dunnett** for FWER at one-sided 0.025. Simulation confirms type I error control and favorable operating characteristics vs traditional Phase 2 + Phase 3.
 
@@ -94,9 +97,9 @@ Bayesian approaches (Berry et al. 2002; Lee & Liu 2008) use predictive probabili
 
 | Week | Focus | Deliverable |
 |------|-------|-------------|
-| **1–2** | Read Stallard & Todd (2003), Bauer & Posch (2004), Zhang & Jin (2025). Set up R. | Paper notes. R skeleton (`gsDesign`, `rpact`, `simtrial`, `mvtnorm`). |
+| **1–2** | **Read (full PDFs in `refs/`):** Stallard & Todd (2003) [pick-winner foundation], Bauer & Posch (2004) [bias warning], Jenkins et al. (2011) [cohort-separation], Zhang & Jin (2025) [primary method], Zhong et al. (2025) [ρ formula], Wang et al. (2023) [rank-based Dunnett], Hua et al. (2026) [independent increment argument]. Set up R. | Paper notes. R skeleton (`gsDesign`, `rpact`, `simtrial`, `mvtnorm`). |
 | **3–4** | Implement Stallard & Todd two-stage pick-the-winner with binary→binary (ORR for both). Validate published results. | Working simulation; type I error ≈ 0.025 ± MC error. |
-| **5–6** | Extend to ORR→OS. Multi-state data generation. Cohort-separation + group sequential. Run null + 3-4 alternative scenarios. | Full simulation grid; 5k–10k reps per scenario. |
+| **5–6** | Extend to ORR→OS. Multi-state data generation. **Cohort-separation (Jenkins/Zhang) vs. independent-increment (Hua) approach — compare both.** Group sequential. Run null + 3-4 alternative scenarios. | Full simulation grid; 5k–10k reps per scenario. |
 | **7** | Sensitivity: ρ ∈ {0.3, 0.5, 0.7}. Non-PH scenario. Compare pick-a-winner vs drop-the-losers vs traditional Phase 2+3. | Results with MC standard errors. |
 | **8** | Presentation prep. Figures (power curves, FWER contours). Reproducible vignette. | 15-min presentation + reproducible package. |
 
@@ -116,6 +119,8 @@ Bayesian approaches (Berry et al. 2002; Lee & Liu 2008) use predictive probabili
 6. Zhang EP, Jin M. A Multi-Arm Multi-Stage Group Sequential Phase 2/3 Design with Dose Selection for Oncology Trials. *Stat Biopharm Res*. 2025.
 
 7. Wang X, Chen M, Chu S, Fan R, Chan ISF. A rank-based approach to improve the efficiency of inferential seamless phase 2/3 clinical trials with dose optimization. *Contemporary Clinical Trials*. 2023;132:107300. DOI: 10.1016/j.cct.2023.107300.
+
+8. Hua K, Wang X, Luo X. Multiplicity control in clinical trials with adaptive selection followed by group-sequential testing. *Statistics in Biopharmaceutical Research*. 2026. DOI: 10.1080/19466315.2026.2634636.
 
 **Further Reading**
 
