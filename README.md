@@ -35,7 +35,7 @@ The core statistical challenge: different data types and imperfect correlation b
 | Pick-the-winner | Stallard & Todd (2003) | Two-stage, K treatments → select best at interim via efficient score |
 | Bias from endpoint reuse | Bauer & Posch (2004) | Why shared patient data between ORR interim and OS final inflates type I error |
 | Multiple comparison | Dunnett (1955) | K treatments vs control adjustment |
-| MAMS for TTE | Magirr et al. (2012) | Multi-arm multi-stage for time-to-event endpoints |
+| Generalized Dunnett for MAMS | Magirr et al. (2012) | Multi-arm multi-stage boundary computation via conditional independence (normal endpoints) |
 | SCPRT-based MAMS | Wu et al. (2023) | Analytical boundaries for multi-stage selection |
 | ORR/PFS→OS seamless | Zhang & Jin (2025) | Multi-stage group sequential Phase 2/3 with short-term selection, long-term confirmation |
 | Correlation formulas | Zhong et al. (2025) | Analytic ρ(ORR, OS) for design calibration |

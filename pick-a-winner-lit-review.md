@@ -76,13 +76,22 @@ The ICH E9(R1) addendum on estimands introduces critical considerations for seam
 | 15 | **Zhang EP, Jin M** | 2025 | *Stat Biopharm Res* | ORR/PFS (interim) → OS (final) | **Multi-stage group sequential Phase 2/3** with dose selection; inverse normal combination test + closed testing + group sequential boundaries; cohort-separation design (Cohort 1: pre-selection, Cohort 2: post-selection); explicit covariance formula for combined test statistic across stages | Type I error control at 0.025 confirmed; compares favorably to traditional Phase 2+3 approach |
 | 16 | **Zhong W, Liu J, Wang C** | 2025 | *Stat Med* | Binary surrogate (ORR) → TTE (OS/PFS) | **Analytic derivation of ρ(ORR, OS)** under PH; FWER inflation formula as function of ρ and selection threshold Δ; upper bound for ρ under proportional hazards with censoring | FWER inflation characterized; software implementing drop-the-losers design provided |
 | 17 | **Wu J, Li Y, Zhu L** | 2023 | *Stat Med* | Continuous (normal) | SCPRT-based group sequential MAMS; analytical futility/efficacy boundaries for arbitrary stages and arms; avoids exponential complexity of Magirr et al. boundary search | Dunnett correction under global null; continuous outcomes only |
-| 18 | **Magirr D, et al.** | 2012 | *Stat Med* | Time-to-event | **Canonical MAMS TTE reference**; flexible multi-arm multi-stage design for time-to-event outcomes; covariance structure for TTE test statistics across stages; extends multivariate normal approach underpinning later work | Operating characteristics; boundary computation algorithm |
+| 18 | **Magirr D, Jaki T, Whitehead J** | 2012 | *Biometrika* | Normal (continuous) | **Generalized Dunnett test for MAMS**; efficacy and futility boundaries via conditional independence given control mean; applicable to any number of arms/stages; strong FWER control under global null | Boundary computation via numerical integration + one-dimensional search |
 | 19 | **Bauer P, Posch M** | 2004 | *Stat Med* | Any | **Origin of the Bauer-Posch bias result**; modification, adaptation and suboptimal combination tests in adaptive designs; shows using same patients' short-term and long-term data inflates type I error | Theoretical derivation of bias; simulation confirmation |
 | 20 | **Dunnett CW** | 1955 | *JASA* | Continuous (normal means) | **Original Dunnett multiple comparison procedure**; comparing several treatments with a single control; foundation of the Dunnett-type adjustments used throughout the pick-a-winner literature | Tables of critical values for equal-sample-size case |
-| 21 | **Kelly PJ, et al.** | 2005 | *Stat Med* | Any (practical implementation) | **Practical guide to implementing MAMS trials**; operational considerations, sample size, monitoring, and analysis for multi-arm multi-stage designs; complements the STAMPEDE experience | Practical implementation — real trial examples with simulations |
-| 22 | **Mehta CR, Tsiatis AA** | 2001 | *Biometrics* | Time-to-event | **Flexible sample size estimation using information-based monitoring**; directly addresses how to time interim looks when the primary endpoint is immature; relevant for ORR→OS seamless designs where OS data is immature at interim | Information-based sample size re-estimation framework |
+| 21 | **Kelly PJ, Stallard N, Todd S** | 2005 | *J Biopharm Stat* | Normal (continuous) | **Adaptive group sequential design for phase II/III with treatment selection**; extends Stallard & Todd (2003) pick-the-winner to group-sequential confirmatory stage; inverse normal combination test for type I error control | Operating characteristics; comparison of design options |
+| 22 | **Mehta CR, Tsiatis AA** | 2001 | *Drug Inf J* | Time-to-event | **Flexible sample size considerations using information-based interim monitoring**; how to time interim analyses and re-estimate sample size when the primary endpoint is immature — exact situation in ORR→OS seamless designs | Information-based sample size re-estimation framework |
+| 23 | **Wang X, Chen M, Chu S, Fan R, Chan ISF** | 2023 | *Contemp Clin Trials* | Biomarker → efficacy (normal/TTE) | **Rank-based Dunnett adjustment** for seamless 2/3 with dose optimization; accounts for biomarker rank of selected dose + correlation ρ between biomarker and efficacy; uses inverse normal combination test with rank-adjusted p-values vs Šidák | FWER controlled at 0.025; uniformly higher power than Šidák and traditional Dunnett |
 
 ### 2.2 Detailed Notes on Key Papers
+
+#### Paper #23: Wang et al. (2023)
+- **Full citation:** Wang X, Chen M, Chu S, Fan R, Chan ISF. A rank-based approach to improve the efficiency of inferential seamless phase 2/3 clinical trials with dose optimization. *Contemporary Clinical Trials*. 2023;132:107300. DOI: 10.1016/j.cct.2023.107300
+- **Core contribution:** **Rank-based Dunnett adjustment for seamless 2/3 designs** where dose selection uses a biomarker/surrogate endpoint with correlation ρ to the efficacy endpoint. The key insight: if the selected dose is not the one with the best biomarker response (rank r < m), the multiplicity adjustment dimension reduces, improving power.
+- **Key method:** For m doses, if the selected dose has biomarker rank r, the adjusted p-value is p₁ = P(E_Jr > e_Jr), where E_Jr follows a 2m-dimensional MVN with correlation structure given by Table 1. When ρ is unknown, a rank-based Dunnett shortcut replaces E_Jr with the r-th order statistic of an m-dimensional t-distribution. The final test uses inverse normal combination: C(p₁, p₂) = 1 − Φ(√w₁ Φ⁻¹(1−p₁) + √(1−w₁) Φ⁻¹(1−p₂)).
+- **Key results:** Rank-based Dunnett controls FWER at 0.025 across all ρ ∈ [0,1] and all ranks. It is uniformly less conservative than Šidák and traditional Dunnett when r < m. The FWER varies from 0.0126 (ρ=1, r=1) to 0.025 (ρ=0, r=1) — the method is slightly conservative when ρ is high.
+- **Correlation structure (Table 1):** In a balanced 3-dose + control design: corr(Eⱼ, Eₚ) = 1/2; corr(Bⱼ, Bₚ) = 1/2; corr(Eⱼ, Bⱼ) = ρ; corr(Eⱼ, Bₚ) = ρ/2 for j ≠ p. This is a clean, practical correlation matrix directly usable by the intern for simulation.
+- **Relevance:** Provides an alternative to Šidák adjustment that is more powerful when the selected dose is not the best biomarker responder — which is common in practice due to safety/tolerability considerations. The correlation structure formula is directly implementable in the intern's simulation framework.
 
 #### Paper #1: Jin & Zhang (2021)
 - **DOI:** 10.1177/0962280220986935
@@ -158,16 +167,17 @@ The ICH E9(R1) addendum on estimands introduces critical considerations for seam
 - **Limitation:** Continuous outcomes (normal), not time-to-event. Still useful for boundary computation.
 - **Relevance:** Boundary machinery for the group sequential component of the design.
 
-#### Paper #18: Magirr et al. (2012)
-- **Full citation:** Magirr D, Jaki T, Whitehead J. "A flexible MAMS design for time-to-event outcomes." *Statistics in Medicine*. 2012;31(25):3060-3072. DOI: 10.1002/sim.5389
-- **Core contribution:** **The canonical MAMS reference for time-to-event endpoints.** Extends the multi-arm multi-stage framework to accommodate time-to-event outcomes with staggered patient entry and censoring. Derives the joint distribution of test statistics across stages for TTE endpoints, which underpins the covariance structure used in Zhang & Jin (2025) and Dixit et al. (2021).
-- **Key innovation:** Uses a combination test approach with Fisher's product or inverse normal combining functions for TTE test statistics. Provides a computationally feasible boundary search algorithm avoiding full multivariate normal integration.
-- **Relevance:** Foundational machinery for the TTE-specific MAMS framework; the intern must understand this paper to properly implement the covariance structure for the group sequential component.
+#### Paper #18: Magirr et al. (2012) — Biometrika
+- **Full citation:** Magirr D, Jaki T, Whitehead J. A generalized Dunnett test for multi-arm multi-stage clinical studies with treatment selection. *Biometrika*. 2012;99(2):494-501. DOI: 10.1093/biomet/ass002
+- **Core contribution:** **Generalized Dunnett test for MAMS with normal endpoints.** Derives efficacy and futility boundaries for arbitrary numbers of treatment arms and stages, without requiring pre-specification of which arms continue. Proves strong FWER control under the global null via conditional independence of test statistics given the control mean estimate.
+- **Key innovation:** Exploits the fact that test statistics for different experimental arms are conditionally independent given the control arm estimates (Eq 2-3), reducing the K×J-dimensional integration problem to a one-dimensional numerical integral. Provides a computationally feasible boundary search using this decomposition.
+- **Practical constraint:** Testing is based on a normally distributed endpoint with known variance. The TTE extension builds on this framework but is not provided in this paper. The `mams` R package (Jaki et al. 2019, *J Stat Software* 88(4)) implements the design.
+- **Relevance:** Foundational boundary-computation machinery that underpins later MAMS work. The intern should understand the conditional-independence trick (Theorem 1) as it informs the covariance structure in Zhang & Jin (2025).
 
 #### Paper #19: Bauer & Posch (2004)
-- **Full citation:** Bauer P, Posch M. "Modification, adaptation and suboptimal combination tests — a simulation study." *Statistics in Medicine*. 2004;23(10):1651-1670. DOI: 10.1002/sim.1769
-- **Core contribution:** **Origin of the Bauer-Posch bias result.** Demonstrates that naive use of the same patients' short-term endpoint data for interim selection and their long-term endpoint data for the final test inflates the type I error. Shows that combination tests can control this inflation when properly applied.
-- **Key finding:** The magnitude of bias depends on the correlation between short-term and long-term endpoints, the selection rule, and the amount of overlap in patient data. Suboptimal choices of the combining function can exacerbate inflation.
+- **Full citation:** Bauer P, Posch M. Letter to the Editor: Modification of the sample size and the schedule of interim analyses in survival trials based on data inspections. *Statistics in Medicine*. 2004;23(8):1333-1335. DOI: 10.1002/sim.1759
+- **Core contribution:** **Origin of the Bauer-Posch bias result.** Demonstrates that naive use of the same patients' short-term endpoint data for interim selection and their long-term endpoint data for the final test inflates the type I error. Shows via an extreme example (perfect surrogate predictor) that the type I error rate can approach 2α.
+- **Key finding:** The magnitude of bias depends on the correlation between short-term and long-term endpoints, the selection rule, and the amount of overlap in patient data. Critically, the paper notes that this problem does not occur when the second-stage test statistics are computed only from patients recruited after the interim analysis — which is exactly what cohort-separation achieves.
 - **Relevance:** The document references "Bauer-Posch bias" extensively (§4.3, §5) — this is the original citation. Understanding this result is essential for the intern to appreciate why cohort-separation designs (Jenkins et al. 2011, Zhang & Jin 2025) are necessary.
 
 #### Paper #20: Dunnett (1955)
@@ -176,12 +186,12 @@ The ICH E9(R1) addendum on estimands introduces critical considerations for seam
 - **Relevance:** Dunnett-adjusted tests are used throughout the pick-a-winner literature (Friede & Stallard 2008, Stallard & Todd 2008, Dixit et al. 2021). The intern should understand the classical Dunnett test before studying its adaptive extensions.
 
 #### Paper #21: Kelly et al. (2005)
-- **Full citation:** Kelly PJ, Stallard N, Todd S. "A practical guide to implementing multi-arm multi-stage clinical trials." *Statistics in Medicine*. 2005;24(4):559-577. DOI: 10.1002/sim.1998
-- **Core contribution:** Practical implementation guide for MAMS designs. Covers sample size determination, monitoring guidelines, analysis strategies, and software implementation for multi-arm multi-stage trials. Complements the STAMPEDE operational experience (Sydes et al. 2012).
-- **Relevance:** Provides the operational framework the intern will need when moving from methodology to implementation.
+- **Full citation:** Kelly PJ, Stallard N, Todd S. An adaptive group sequential design for phase II/III clinical trials that select a single treatment from several. *Journal of Biopharmaceutical Statistics*. 2005;15(4):641-658. DOI: 10.1081/BIP-200062857
+- **Core contribution:** Extends the Stallard & Todd (2003) pick-the-winner design by incorporating group sequential monitoring in the confirmatory stage. Proposes an adaptive design where multiple experimental treatments are compared to control in Phase II, one is selected via a short-term endpoint, and the selected treatment continues into a group-sequential Phase III. Uses inverse normal combination tests to control type I error.
+- **Relevance:** Provides the operational framework for two-stage designs with selection and sequential testing — directly relevant to the intern's simulation architecture.
 
 #### Paper #22: Mehta & Tsiatis (2001)
-- **Full citation:** Mehta CR, Tsiatis AA. "Flexible sample size estimation using information-based monitoring." *Biometrics*. 2001;57(3):850-857. DOI: 10.1111/j.0006-341X.2001.00850.x
+- **Full citation:** Mehta CR, Tsiatis AA. Flexible sample size considerations using information-based interim monitoring. *Drug Information Journal*. 2001;35(4):1095-1112. DOI: 10.1177/009286150103500407
 - **Core contribution:** Information-based monitoring framework for adaptive clinical trials. Directly addresses how to time interim analyses and re-estimate sample size when the primary endpoint is immature — the exact situation in seamless ORR→OS designs where OS data is highly immature at the time of the ORR-based interim decision.
 - **Relevance:** The intern needs this framework to determine when to conduct the interim analysis (driven by ORR maturity) and how to handle the resulting information fraction for OS.
 
@@ -538,7 +548,7 @@ This timeline replaces the original 8-week plan with a more realistic 10–12 we
 
 3. **Bretz F, Schmidli H, König F, Racine A, Maurer W.** Confirmatory seamless phase II/III clinical trials with hypotheses selection at interim: general concepts. *Biometrical Journal*. 2006;48(4):623-634. DOI: 10.1002/bimj.200510232. PMID: 16972714.
 
-4. **Schmidli H, Bretz F, Racine A, Maurer W.** Confirmatory seamless phase II/III clinical trials with hypotheses selection at interim: applications and practical considerations. *Biometrical Journal*. 2006;48(4):635-643. DOI: 10.1002/bimj.200510232. PMID: 16972715.
+4. **Schmidli H, Bretz F, Racine A, Maurer W.** Confirmatory seamless phase II/III clinical trials with hypotheses selection at interim: applications and practical considerations. *Biometrical Journal*. 2006;48(4):635-643. DOI: 10.1002/bimj.200510231. PMID: 16972715.
 
 5. **Stallard N, Todd S.** Sequential designs for phase III clinical trials incorporating treatment selection. *Statistics in Medicine*. 2003;22(5):689-703. DOI: 10.1002/sim.1362. PMID: 12587100.
 
@@ -556,25 +566,25 @@ This timeline replaces the original 8-week plan with a more realistic 10–12 we
 
 12. **Wu J, Li Y, Zhu L.** Group sequential multi-arm multi-stage trial design with treatment selection. *Statistics in Medicine*. 2023;42:1480-1491. DOI: 10.1002/sim.9682.
 
-13. **Magirr D, Jaki T, Whitehead J.** A flexible MAMS design for time-to-event outcomes. *Statistics in Medicine*. 2012;31(25):3060-3072. DOI: 10.1002/sim.5389.
+13. **Magirr D, Jaki T, Whitehead J.** A generalized Dunnett test for multi-arm multi-stage clinical studies with treatment selection. *Biometrika*. 2012;99(2):494-501. DOI: 10.1093/biomet/ass002.
 
-14. **Bauer P, Posch M.** Modification, adaptation and suboptimal combination tests — a simulation study. *Statistics in Medicine*. 2004;23(10):1651-1670. DOI: 10.1002/sim.1769.
+14. **Bauer P, Posch M.** Letter to the Editor: Modification of the sample size and the schedule of interim analyses in survival trials based on data inspections. *Statistics in Medicine*. 2004;23(8):1333-1335. DOI: 10.1002/sim.1759.
 
 15. **Dunnett CW.** A multiple comparison procedure for comparing several treatments with a control. *Journal of the American Statistical Association*. 1955;50(272):1096-1121.
 
-16. **Kelly PJ, Stallard N, Todd S.** A practical guide to implementing multi-arm multi-stage clinical trials. *Statistics in Medicine*. 2005;24(4):559-577. DOI: 10.1002/sim.1998.
+16. **Kelly PJ, Stallard N, Todd S.** An adaptive group sequential design for phase II/III clinical trials that select a single treatment from several. *Journal of Biopharmaceutical Statistics*. 2005;15(4):641-658. DOI: 10.1081/BIP-200062857.
 
-17. **Mehta CR, Tsiatis AA.** Flexible sample size estimation using information-based monitoring. *Biometrics*. 2001;57(3):850-857. DOI: 10.1111/j.0006-341X.2001.00850.x.
+17. **Mehta CR, Tsiatis AA.** Flexible sample size considerations using information-based interim monitoring. *Drug Information Journal*. 2001;35(4):1095-1112. DOI: 10.1177/009286150103500407.
 
 ### Methodological Foundations
 
-18. **Royston P, Parmar MKB, Qian W.** Novel designs for multi-arm multi-stage trials (MAMS) with time-to-event outcomes. *Clinical Trials*. 2003 (subsequently extended in various publications). **Note:** The definitive MAMS reference is Parmar MKB, et al. More flexible designs for randomized clinical trials — the MAMS framework. *Clinical Trials*. 2017. *[Full text not reviewed — inferential details from related work]*
+18. **Royston P, Parmar MKB, Qian W.** Novel designs for multi-arm clinical trials with survival outcomes with an application in ovarian cancer. *Statistics in Medicine*. 2003;22(14):2239-2256. DOI: 10.1002/sim.1430. **Note:** The definitive MAMS framework summary is Parmar MKB, et al. More flexible designs for randomized clinical trials — the MAMS framework. *Clinical Trials*. 2017. *[Full text not reviewed]*
 
 19. **Bauer P, Kieser M.** Combining different phases in the development of medical treatments within a single trial. *Statistics in Medicine*. 1999;18:1833-1848.
 
 20. **Müller HH, Schäfer H.** Adaptive group sequential designs for clinical trials: combining the advantages of adaptive and of classical group sequential approaches. *Biometrics*. 2001;57(3):886-891.
 
-21. **Brannath W, König F, Bauer P.** Multiplicity and adaptive designs. *Biometrical Journal*. 2007;49(4):506-517.
+21. **Brannath W, Koenig F, Bauer P.** Multiplicity and flexibility in clinical trials. *Pharmaceutical Statistics*. 2007;6(3):205-216. DOI: 10.1002/pst.302.
 
 ### Bayesian Adaptive Design Literature
 
@@ -596,19 +606,21 @@ This timeline replaces the original 8-week plan with a more realistic 10–12 we
 
 29. **Spivack JH, Cheng B, Levin B.** Adding dose modifications into Phase II and Phase II/III seamless trials. *Statistical Methods in Medical Research*. 2019;29(5):1315-1324. DOI: 10.1177/0962280219859387.
 
+30. **Wang X, Chen M, Chu S, Fan R, Chan ISF.** A rank-based approach to improve the efficiency of inferential seamless phase 2/3 clinical trials with dose optimization. *Contemporary Clinical Trials*. 2023;132:107300. DOI: 10.1016/j.cct.2023.107300.
+
 ### Regulatory Guidance
 
-30. **ICH.** Addendum on Estimands and Sensitivity Analysis in Clinical Trials to the Guideline on Statistical Principles for Clinical Trials E9(R1). International Council for Harmonisation; 2019.
+31. **ICH.** Addendum on Estimands and Sensitivity Analysis in Clinical Trials to the Guideline on Statistical Principles for Clinical Trials E9(R1). International Council for Harmonisation; 2019.
 
-31. **FDA.** Adaptive Design Clinical Trials for Drugs and Biologics — Guidance for Industry. 2019.
+32. **FDA.** Adaptive Design Clinical Trials for Drugs and Biologics — Guidance for Industry. 2019.
 
-32. **FDA Oncology Center of Excellence.** Project Optimus: Reforming the dose selection paradigm in oncology. Ongoing initiative.
+33. **FDA Oncology Center of Excellence.** Project Optimus: Reforming the dose selection paradigm in oncology. Ongoing initiative.
 
 ### Surrogate Endpoint Literature
 
-33. **Buyse M, Michiels S, Sargent DJ, et al.** Integrating biomarkers in clinical trials. In: *Handbook of Statistics in Clinical Oncology*. 3rd ed. 2012.
+34. **Buyse M, Michiels S, Sargent DJ, et al.** Integrating biomarkers in clinical trials. In: *Handbook of Statistics in Clinical Oncology*. 3rd ed. 2012.
 
-34. **Prasad V, Kim C, Burotto M, Vandross A.** The strength of association between surrogate end points and survival in oncology: a systematic review of trial-level meta-analyses. *JAMA Internal Medicine*. 2015;175(8):1389-1398.
+35. **Prasad V, Kim C, Burotto M, Vandross A.** The strength of association between surrogate end points and survival in oncology: a systematic review of trial-level meta-analyses. *JAMA Internal Medicine*. 2015;175(8):1389-1398.
 
 ---
 

@@ -19,8 +19,9 @@ Traditional oncology development runs Phase II and III as separate sequential tr
 | 1 | Stallard & Todd | 2003 | *Stat Med* | Foundational pick-the-winner: two-stage, K treatments → select best at interim via efficient score. Works for binary, normal, TTE. |
 | 2 | Bauer & Posch | 2004 | *Stat Med* | Origin of Bauer-Posch bias: using same patients' short-term data for selection and long-term for testing inflates type I error. |
 | 3 | Dunnett | 1955 | *JASA* | Classic multiple comparison: K treatments vs control with FWER control. Building block for all pick-a-winner multiplicity adjustments. |
-| 4 | Magirr et al. | 2012 | *Stat Med* | Canonical MAMS for TTE endpoints. Covariance structure for test statistics across stages — enables group sequential boundaries. |
+| 4 | Magirr et al. | 2012 | *Biometrika* | Generalized Dunnett test for MAMS with normal endpoints; boundary computation via conditional independence. TTE extension in Zhang & Jin (2025). |
 | 5 | Wu et al. | 2023 | *Stat Med* | SCPRT-based MAMS. Analytical futility/efficacy boundaries for arbitrary stages/arms. Continuous outcomes only. |
+| 6 | Wang et al. | 2023 | *Contemp Clin Trials* | Rank-based Dunnett adjustment; accounts for biomarker rank + correlation ρ; more powerful than Šidák when selected dose is not best biomarker responder. |
 | 6 | Zhang & Jin | 2025 | *Stat Biopharm Res* | **Directly addresses your setting.** Multi-stage group sequential Phase 2/3 with dose selection via ORR/PFS, OS as final. Cohort-separation + inverse normal combination + closed testing. |
 
 **Stallard & Todd (2003).** The foundational design: K experimental arms vs control, select the most promising at interim via efficient score statistic, continue with selected arm + control. All patients from both stages included in the final test with multiplicity adjustment. Handles binary, normal, or failure-time data uniformly. Start here — implement this two-stage design first.
@@ -29,9 +30,11 @@ Traditional oncology development runs Phase II and III as separate sequential tr
 
 **Dunnett (1955).** Exact critical values for comparing multiple treatments vs a single control with FWER control. The multivariate normal distribution of Dunnett statistics is the foundation for multiplicity adjustment throughout this literature.
 
-**Magirr et al. (2012).** Extends MAMS to TTE outcomes with staggered entry and censoring. Derives the joint distribution of test statistics across stages — the covariance structure that Zhang & Jin (2025) builds on. Also provides a feasible boundary search algorithm.
+**Magirr et al. (2012).** Generalized Dunnett test for MAMS with a normally distributed endpoint. Derives efficacy and futility boundaries for arbitrary numbers of arms and stages by exploiting conditional independence of test statistics given the control mean. Theorem 1 proves strong FWER control. The conditional-independence trick (conditioning on the control arm path) is the computational foundation that later TTE extensions build on — see Zhang & Jin (2025) for the TTE adaptation of this covariance structure.
 
 **Wu et al. (2023).** SCPRT-based group sequential MAMS yielding analytical boundaries for any number of stages and arms, avoiding the exponential complexity of Magirr et al.'s search. Continuous outcomes only; boundary structure can be adapted for TTE.
+
+**Wang et al. (2023).** Rank-based Dunnett adjustment for seamless 2/3 designs where dose selection uses a biomarker with correlation ρ to the efficacy endpoint. If the selected dose's biomarker rank is r < m (not the best responder), multiplicity adjustment reduces dimension, improving power vs Šidák. The correlation matrix (Table 1) gives: corr(Eⱼ, Eₚ) = 1/2; corr(Eⱼ, Bⱼ) = ρ; corr(Eⱼ, Bₚ) = ρ/2 for j ≠ p. Uses inverse normal combination test with rank-adjusted p-values. Very practical for simulation—the correlation structure is directly implementable.
 
 **Zhang & Jin (2025).** Your most important paper. Extends two-stage seamless to **multi-stage group sequential** with TTE endpoints and dose selection via ORR/PFS. Key innovations: (1) **cohort-separation** — Cohort 1 (pre-selection, all arms) and Cohort 2 (post-selection, selected arm + control) combined via inverse normal combination with weights proportional to expected events; (2) **explicit covariance formula** for combined test statistics across stages; (3) **closed testing + Dunnett** for FWER at one-sided 0.025. Simulation confirms type I error control and favorable operating characteristics vs traditional Phase 2 + Phase 3.
 
@@ -67,7 +70,7 @@ Bayesian approaches (Berry et al. 2002; Lee & Liu 2008) use predictive probabili
 
 **Drop-the-Losers (Zhong et al. 2025).** Uses ORR for selection. Derives ρ(ORR, OS) under PH; FWER inflation = f(ρ, Δ). When ρ = 0, no inflation. For solid tumors, ρ ∈ [0.3, 0.7].
 
-**Rank-Based Dunnett (Wang et al. 2023).** *Abstract only.* Rank-based statistics in Dunnett framework. Fewer assumptions; less regulatory familiarity.
+**Rank-Based Dunnett (Wang et al. 2023).** Uses biomarker rank of selected dose to reduce multiplicity dimension. When ρ between biomarker and efficacy is known, exact 2m-dimensional MVN p-value. When ρ is unknown, rank-based Dunnett shortcut (r-th order statistic of m-dim t-distribution). More powerful than Šidák when selected dose is not the best biomarker responder. Correlation matrix directly implementable for simulation: corr(Eⱼ, Eₚ) = 1/2; corr(Eⱼ, Bⱼ) = ρ; corr(Eⱼ, Bₚ) = ρ/2.
 
 **Subpopulation Selection (Jenkins et al. 2011).** *Abstract only.* Continue in all patients, subgroup, or both. Cohort-separation idea inspired Zhang & Jin.
 
@@ -106,24 +109,26 @@ Bayesian approaches (Berry et al. 2002; Lee & Liu 2008) use predictive probabili
 **Core Papers**
 
 1. Stallard N, Todd S. Sequential designs for phase III clinical trials incorporating treatment selection. *Stat Med*. 2003;22(5):689-703.
-2. Bauer P, Posch M. Modification, adaptation and suboptimal combination tests. *Stat Med*. 2004;23(10):1651-1670.
+2. Bauer P, Posch M. Letter to the Editor: Modification of the sample size and the schedule of interim analyses in survival trials based on data inspections. *Stat Med*. 2004;23(8):1333-1335. DOI: 10.1002/sim.1759.
 3. Dunnett CW. A multiple comparison procedure for comparing several treatments with a control. *JASA*. 1955;50(272):1096-1121.
-4. Magirr D, Jaki T, Whitehead J. A flexible MAMS design for time-to-event outcomes. *Stat Med*. 2012;31(25):3060-3072.
+4. Magirr D, Jaki T, Whitehead J. A generalized Dunnett test for multi-arm multi-stage clinical studies with treatment selection. *Biometrika*. 2012;99(2):494-501. DOI: 10.1093/biomet/ass002.
 5. Wu J, Li Y, Zhu L. Group sequential multi-arm multi-stage trial design with treatment selection. *Stat Med*. 2023;42:1480-1491.
 6. Zhang EP, Jin M. A Multi-Arm Multi-Stage Group Sequential Phase 2/3 Design with Dose Selection for Oncology Trials. *Stat Biopharm Res*. 2025.
-7. Prasad V, et al. The strength of association between surrogate end points and survival in oncology. *JAMA Intern Med*. 2015;175(8):1389-1398.
+
+7. Wang X, Chen M, Chu S, Fan R, Chan ISF. A rank-based approach to improve the efficiency of inferential seamless phase 2/3 clinical trials with dose optimization. *Contemporary Clinical Trials*. 2023;132:107300. DOI: 10.1016/j.cct.2023.107300.
 
 **Further Reading**
 
-8. Jin M, Zhang P. *Stat Methods Med Res*. 2021;30(4):1143-1151.
-9. Jenkins M, Stone A, Jennison C. *Pharm Stat*. 2011;10(4):347-356.
-10. Bretz F, et al. *Biom J*. 2006;48(4):623-634.
-11. Sun LZ, et al. *Stat Biopharm Res*. 2020;12(2):224-233.
-12. Dixit V, et al. *J Biopharm Stat*. 2021;31(6):838-851.
-13. Sydes MR, et al. *Trials*. 2012;13:168.
-14. Kelly PJ, et al. *Stat Med*. 2005;24(4):559-577.
-15. Friede T, et al. *arXiv:1901.08365*. 2019.
-16. Mehta CR, Tsiatis AA. *Biometrics*. 2001;57(3):850-857.
-17. Zhong W, et al. *Stat Med*. 2025;44:e70209.
-18. Stallard N, Todd S. *Stat Med*. 2008;27(29):6209-6227.
-19. Broglio K, et al. *Ther Innov Regul Sci*. 2024;58:917-929.
+8. Prasad V, et al. The strength of association between surrogate end points and survival in oncology. *JAMA Intern Med*. 2015;175(8):1389-1398.
+9. Jin M, Zhang P. *Stat Methods Med Res*. 2021;30(4):1143-1151.
+10. Jenkins M, Stone A, Jennison C. *Pharm Stat*. 2011;10(4):347-356.
+11. Bretz F, et al. *Biom J*. 2006;48(4):623-634.
+12. Sun LZ, et al. *Stat Biopharm Res*. 2020;12(2):224-233.
+13. Dixit V, et al. *J Biopharm Stat*. 2021;31(6):838-851.
+14. Sydes MR, et al. *Trials*. 2012;13:168.
+15. Kelly PJ, et al. *Stat Med*. 2005;24(4):559-577.
+16. Friede T, et al. *arXiv:1901.08365*. 2019.
+17. Mehta CR, Tsiatis AA. *Biometrics*. 2001;57(3):850-857.
+18. Zhong W, et al. *Stat Med*. 2025;44:e70209.
+19. Stallard N, Todd S. *Stat Med*. 2008;27(29):6209-6227.
+20. Broglio K, et al. *Ther Innov Regul Sci*. 2024;58:917-929.
