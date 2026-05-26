@@ -24,19 +24,44 @@ import json
 import re
 import sys
 import os
+import time
+import urllib.parse
 
 def query_crossref(doi):
-    """Query Crossref API for a single DOI. Returns message dict or None."""
+    """Query Crossref API for a single DOI.
+    Returns (message_dict, status_string) where status_string is
+    'ok', 'not_found', 'rate_limited', 'server_error', or 'network_error'."""
+    encoded_doi = urllib.parse.quote(doi, safe='')
+    url = f"https://api.crossref.org/works/{encoded_doi}"
+    tmp_out = "/tmp/doi_response.json"
     try:
         r = subprocess.run(
-            ["curl", "-sL", f"https://api.crossref.org/works/{doi}"],
+            ["curl", "-sL", "-w", "%{http_code}", "-o", tmp_out, url],
             capture_output=True, text=True, timeout=15
         )
-        if r.returncode != 0 or not r.stdout:
-            return None
-        return json.loads(r.stdout).get("message")
-    except Exception as e:
-        return None
+        http_code = r.stdout.strip()
+        if r.returncode != 0:
+            return None, "network_error"
+        if http_code == "404":
+            return None, "not_found"
+        if http_code == "429":
+            return None, "rate_limited"
+        if http_code in ("500", "502", "503"):
+            return None, "server_error"
+        if http_code != "200":
+            return None, f"http_{http_code}"
+        if not os.path.exists(tmp_out):
+            return None, "network_error"
+        with open(tmp_out) as f:
+            body = f.read()
+        if not body:
+            return None, "network_error"
+        data = json.loads(body)
+        return data.get("message"), "ok"
+    except json.JSONDecodeError:
+        return None, "network_error"
+    except Exception:
+        return None, "network_error"
 
 def search_crossref(query, limit=10):
     """Search Crossref by author/title. Returns list of items."""
@@ -83,9 +108,15 @@ def verify_reference(doi, expected=None):
     
     Returns: (passed: bool, message: dict, issues: list)
     """
-    msg = query_crossref(doi)
-    if not msg:
-        return False, None, ["DOI not found in Crossref"]
+    msg, status = query_crossref(doi)
+    if status == "not_found":
+        return False, None, ["DOI not found in Crossref (404)"], status
+    if status == "rate_limited":
+        return False, None, ["Rate limited (429) by Crossref API"], status
+    if status == "server_error":
+        return False, None, ["Crossref server error (5xx)"], status
+    if status != "ok":
+        return False, None, [f"Network/API error ({status})"], status
     
     issues = []
     if expected:
@@ -124,7 +155,7 @@ def verify_reference(doi, expected=None):
             if pg and pg != str(exp_pages):
                 issues.append(f"PAGES: expected {exp_pages}, got {pg}")
     
-    return len(issues) == 0, msg, issues
+    return len(issues) == 0, msg, issues, "ok"
 
 
 def extract_dois_from_markdown(filepath):
@@ -154,9 +185,9 @@ def extract_dois_from_markdown(filepath):
         
         if current_ref:
             # Find DOI
-            doi_m = re.search(r'DOI:\s*(10\.\S+)', line)
+            doi_m = re.search(r'(?:DOI|doi|https?://doi\.org)\s*:\s*(10\.[^\s\),\];]+)', line)
             if doi_m:
-                current_ref["doi"] = doi_m.group(1).rstrip(".")
+                current_ref["doi"] = doi_m.group(1)
             
             # Find journal
             jrnl_m = re.search(r'\*([^*]+?)\*\s*\.?\s*\d{4}', line)
@@ -164,7 +195,7 @@ def extract_dois_from_markdown(filepath):
                 current_ref["journal"] = jrnl_m.group(1)
             
             # Find year
-            yr_m = re.search(r'(\d{4})[;,]', line)
+            yr_m = re.search(r'(\d{4})(?:[;,\s\.]|$)', line)
             if yr_m:
                 current_ref["year"] = int(yr_m.group(1))
     
@@ -208,7 +239,7 @@ def main():
         if ref.get("year"):
             expected["year"] = ref["year"]
         
-        ok, msg, issues = verify_reference(doi, expected)
+        ok, msg, issues, status = verify_reference(doi, expected)
         
         if ok and msg:
             print(f"  ✅ VERIFIED")
@@ -233,4 +264,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(0 if main() else 1)

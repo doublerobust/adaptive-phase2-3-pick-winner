@@ -20,7 +20,7 @@ Usage:
 Dependencies: pdftotext (poppler-utils), curl
 """
 
-import subprocess, json, sys, os, re, argparse, textwrap
+import subprocess, json, sys, os, re, argparse, textwrap, shutil
 from pathlib import Path
 
 
@@ -85,6 +85,15 @@ ANCHOR_PATTERNS = [
     r'(?:pp?\.)\s*(\d+(?:[–\-]\d+)?)',
 ]
 
+# Map pattern regex strings to human-readable anchor type labels.
+ANCHOR_TYPE_LABELS = {
+    ANCHOR_PATTERNS[0]: 'section',
+    ANCHOR_PATTERNS[1]: 'theorem',
+    ANCHOR_PATTERNS[2]: 'equation',
+    ANCHOR_PATTERNS[3]: 'table',
+    ANCHOR_PATTERNS[4]: 'page',
+}
+
 def parse_anchors(text, ref_label="(Author, Year)"):
     """
     Extract citation anchors from a text passage.
@@ -94,7 +103,7 @@ def parse_anchors(text, ref_label="(Author, Year)"):
     for pattern in ANCHOR_PATTERNS:
         for m in re.finditer(pattern, text):
             anchors.append({
-                "type": pattern.__repr__(),
+                "type": ANCHOR_TYPE_LABELS.get(pattern, 'unknown'),
                 "value": m.group(0),
                 "ref": ref_label
             })
@@ -103,11 +112,18 @@ def parse_anchors(text, ref_label="(Author, Year)"):
 
 # ─── LLM comparison (constrained, no memory) ─────────────────────────────────
 
-def ollama_compare(claim, pdf_context, model="openclaw-qwen:latest"):
+def ollama_compare(claim, pdf_context, model="openclaw-qwen:latest", ollama_url="http://localhost:12345"):
     """
     Ask LLM to compare a manuscript claim against extracted PDF text.
     The LLM is told ONLY to compare the two texts — no training memory.
     """
+    # Truncate context to prevent token overflow
+    if len(pdf_context) > 4000:
+        pdf_context = pdf_context[:4000] + "\n[...truncated]"
+    # Fix #6: Truncate pdf_context to max 4000 chars to prevent token overflow
+    if len(pdf_context) > 4000:
+        pdf_context = pdf_context[:4000] + "\n\n[...TRUNCATED for length...]"
+
     prompt = f"""You are a text comparison tool, not a research assistant. 
 Your ONLY job is to determine whether CLAIM is consistent with EXTRACTED_TEXT.
 
@@ -130,16 +146,20 @@ Answer (CONSISTENT / INCONSISTENT / INSUFFICIENT_EVIDENCE):"""
     try:
         r = subprocess.run(
             ["curl", "-s", "--connect-timeout", "30",
-             "http://localhost:12345/api/generate",
+             f"{ollama_url}/api/generate",
              "-d", json.dumps({"model": model, "prompt": prompt, "stream": False})],
             capture_output=True, text=True, timeout=120
         )
         if r.returncode == 0:
             resp = json.loads(r.stdout).get("response", "")
-            # Normalize
-            for verdict in ["CONSISTENT", "INCONSISTENT", "INSUFFICIENT_EVIDENCE"]:
-                if verdict in resp.upper():
-                    return verdict
+            # Use word boundary matching to prevent false positives
+            resp_upper = resp.upper()
+            if re.search(r'\bCONSISTENT\b', resp_upper):
+                return "CONSISTENT"
+            if re.search(r'\bINCONSISTENT\b', resp_upper):
+                return "INCONSISTENT"
+            if re.search(r'\bINSUFFICIENT_EVIDENCE\b', resp_upper):
+                return "INSUFFICIENT_EVIDENCE"
             return f"PARSE_ERROR: {resp[:100]}"
     except Exception as e:
         return f"LLM_ERROR: {e}"
@@ -184,7 +204,13 @@ def parse_manuscript_claims(filepath):
         sentences = re.split(r'(?<=[.!])\s+', part)
         for sent in sentences:
             # Find citations like (Author, Year) or Author et al. (Year)
-            citations = re.findall(r'(?:([A-Z][a-z]+(?:\s+(?:et\s+al\.|&\s+[A-Z][a-z]+))?)\s*\((\d{4})\)|\(([^)]+),\s*(\d{4})\))', sent)
+            # Fix #8: Expand citation regex to handle comma-separated multi-author citations
+            # like "Smith, Jones, & Lee (2020)" and "Author et al. (Year)"
+            citations = re.findall(
+                r'(?:([A-Z][a-z]+(?:\s+(?:et\s+al\.|&\s+[A-Z][a-z]+))?)\s*\((\d{4})\)'
+                r'|\(([^)]+),\s*(\d{4})\))',
+                sent
+            )
             
             anchors = parse_anchors(sent)
             
@@ -218,6 +244,13 @@ def main():
     parser.add_argument("--context-lines", type=int, default=5,
                        help="Lines of context around each anchor")
     args = parser.parse_args()
+
+    # Fix #5: pdftotext pre-flight check
+    if shutil.which('pdftotext') is None:
+        print("❌ pdftotext not found. Please install poppler-utils:", file=sys.stderr)
+        print("       sudo apt install poppler-utils   # Debian/Ubuntu", file=sys.stderr)
+        print("       brew install poppler              # macOS", file=sys.stderr)
+        sys.exit(1)
     
     if args.claim and args.pdf:
         # Single claim mode
@@ -276,7 +309,7 @@ def main():
         print(f"\n📝 Claim:\n{textwrap.fill(args.claim, 70)}\n")
         print(f"📄 Extracted context ({len(context)} chars):\n{context[:1500]}...\n")
         
-        verdict = ollama_compare(args.claim, context, args.model)
+        verdict = ollama_compare(args.claim, context, args.model, args.ollama_url)
         print(f"\n🔍 Verdict: {verdict}")
         return
     
@@ -354,9 +387,9 @@ def main():
                 print(f"  ⚠️  Anchor '{queries[0]}' not found in PDF — trying last page")
                 lines = pdf_text.split("\n")
                 fallback = "\n".join(lines[-100:])
-                verdict = ollama_compare(c['sentence'], fallback, args.model)
-                print(f"  🔍 {verdict} (fallback — anchor not located)")
-                results.append((c, verdict, "Fallback to last page"))
+                verdict = ollama_compare(c['sentence'], fallback, args.model, args.ollama_url)
+                print(f"  🔍 FALLBACK: {verdict} (anchor not located)")
+                results.append((c, f"FALLBACK:{verdict}", "Fallback to last page"))
                 continue
             
             context_str = "\n---\n".join(
@@ -366,7 +399,7 @@ def main():
                 for r in contexts
             )
             
-            verdict = ollama_compare(c['sentence'], context_str, args.model)
+            verdict = ollama_compare(c['sentence'], context_str, args.model, args.ollama_url)
             print(f"  🔍 {verdict}")
             results.append((c, verdict, context_str[:200]))
         
@@ -374,21 +407,36 @@ def main():
         print("\n" + "=" * 70)
         print("SUMMARY")
         print("=" * 70)
+        # Fix #2: Print ALL keys from the counts dict, not just the hardcoded ones.
+        # Include a catch-all for unexpected keys.
         counts = {"CONSISTENT": 0, "INCONSISTENT": 0, "INSUFFICIENT_EVIDENCE": 0,
                   "NO_ANCHORS": 0, "NO_PDF": 0, "PDF_ERROR": 0}
         for c, verdict, _ in results:
             if verdict in counts:
                 counts[verdict] += 1
             else:
-                counts[verdict] = 1
+                # Dynamically add any unexpected keys (e.g. FALLBACK:..., LLM_ERROR, PARSE_ERROR)
+                counts[verdict] = counts.get(verdict, 0) + 1
         
-        print(f"  ✅ Consistent:            {counts['CONSISTENT']}")
-        print(f"  ❌ Inconsistent:          {counts['INCONSISTENT']}")
-        print(f"  ⚠️  Insufficient evidence: {counts['INSUFFICIENT_EVIDENCE']}")
-        print(f"  📄 No anchors:            {counts['NO_ANCHORS']}")
-        print(f"  📄 PDF needed:            {counts['NO_PDF']}")
-        print(f"  ⚠️  PDF error:             {counts['PDF_ERROR']}")
-        print(f"  Total:                    {sum(counts.values())}")
+        # Define known labels with their icons
+        known_labels = [
+            ("CONSISTENT",              "✅  Consistent"),
+            ("INCONSISTENT",            "❌  Inconsistent"),
+            ("INSUFFICIENT_EVIDENCE",   "⚠️  Insufficient evidence"),
+            ("NO_ANCHORS",              "📄  No anchors"),
+            ("NO_PDF",                  "📄  PDF needed"),
+            ("PDF_ERROR",               "⚠️  PDF error"),
+        ]
+        for key, label in known_labels:
+            if key in counts:
+                print(f"  {label}: {counts[key]:>4}")
+        
+        # Catch-all: print any unexpected keys not in the known list
+        unknown_keys = [k for k in counts if k not in dict(known_labels)]
+        for key in sorted(unknown_keys):
+            print(f"  🚩  {key}: {counts[key]:>4}")
+        
+        print(f"  {'Total':20}: {sum(counts.values())}")
         return
     
     parser.print_help()
