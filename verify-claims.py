@@ -117,9 +117,6 @@ def ollama_compare(claim, pdf_context, model="openclaw-qwen:latest", ollama_url=
     Ask LLM to compare a manuscript claim against extracted PDF text.
     The LLM is told ONLY to compare the two texts — no training memory.
     """
-    # Truncate context to prevent token overflow
-    if len(pdf_context) > 4000:
-        pdf_context = pdf_context[:4000] + "\n[...truncated]"
     # Fix #6: Truncate pdf_context to max 4000 chars to prevent token overflow
     if len(pdf_context) > 4000:
         pdf_context = pdf_context[:4000] + "\n\n[...TRUNCATED for length...]"

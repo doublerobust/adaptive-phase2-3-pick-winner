@@ -25,7 +25,7 @@ The core statistical challenge: different data types and imperfect correlation b
 |------|-------------|
 | `pick-a-winner-lit-review.md` | Comprehensive literature review — Stallard & Todd, Bauer & Posch, Dunnett, Magirr et al., Wu et al., Wang et al. (rank-based), Zhang & Jin, Zhong et al. (DTL), Hua et al. (closed testing + GS), Sun et al. (2-in-1), Jenkins et al. (cohort-separation), Broglio et al. (survey) |
 | `pick-a-winner-lit-review-v3.pdf` | Compiled PDF of the literature review |
-| `pick-a-winner-intern-brief.md` | Intern-facing project brief with 10–12 week implementation plan |
+| `pick-a-winner-intern-brief.md` | Intern-facing project brief with 8-week implementation plan |
 | `audit/` | Independent peer reviews by [Gemini 2.5 Pro](./audit/gemini-review-lit-v2.md) and [Claude Opus 4](./audit/claude-review-lit-v2.md) |
 
 ## Key Methods Covered
@@ -47,15 +47,15 @@ The core statistical challenge: different data types and imperfect correlation b
 
 ## Project Phases
 
-The full implementation spans **10–12 weeks** (intern, Summer 2026):
+The intern implementation spans **8 weeks** (Summer 2026):
 
-| Phase | Weeks | Focus | Deliverable |
-|-------|-------|-------|-------------|
-| **Foundation** | 1–2 | Read Stallard & Todd (2003), Bauer & Posch (2004), Jenkins et al. (2011). Implement two-arm two-stage design in R from scratch. Validate against published tables. | Working Stallard & Todd reproduction |
-| **Pilot** | 3–4 | Read Sun et al. (2020), Zhang & Jin (2025), Zhong et al. (2025), Wang et al. (2023), Hua et al. (2026). Binary→binary simulation (ORR both stages). Small pilot grid (2–3 scenarios × 1k reps). Add multi-state DGP with Weibull transitions. | Working binary→binary sim + pilot results |
-| **Full Simulation** | 5–7 | Full ORR→OS with multi-state DGP + copula correlation. Null, alternatives A–D, sensitivity. Safety-driven selection, non-PH (delayed separation). Compare cohort-separation vs independent-increment. 5k–10k reps/scenario. | Full simulation grid with MC errors |
-| **Sensitivity** | 8–9 | ρ calibration from Prasad et al. (2015). Compare pick-a-winner vs drop-the-losers vs traditional sequential. Compare carry-one vs carry-two. Build R package structure. | Sensitivity results + R package |
-| **Publication** | 10–12 | Methodology draft, figures (power curves, PCS curves, FWER contours). Reproducible vignette. Presentation prep. | R package + vignette + methodology note + 15-min talk |
+| Week | Focus | Deliverable |
+|------|-------|-------------|
+| 1–2 | Read core papers + implement Stallard & Todd two-arm two-stage from scratch. Validate against published tables. | Working reproduction; type I ≈ 0.025 |
+| 3–4 | Binary→binary simulation (ORR both stages). Pilot grid (2–3 × 1k reps). Add multi-state DGP. | Working sim + pilot results |
+| 5–6 | Full ORR→OS simulation. Null + alternatives. Safety-driven selection, non-PH. Compare cohort-separation vs independent-increment. | Full grid with MC errors |
+| 7 | Sensitivity: ρ calibration, pick-a-winner vs DTL vs traditional, carry-one vs carry-two. | Sensitivity results |
+| 8 | Methodology draft, figures, reproducible vignette + R package. | R package + vignette + 15-min talk |
 
 ```mermaid
 gantt
@@ -65,10 +65,10 @@ title Project Roadmap
     Literature Review         :done, 2026-04, 2026-05
     Expert Peer Review        :done, 2026-05-20, 2026-05-21
     Intern Onboarding         :done, 2026-05, 2026-06
-    section Phase 2 (Intern — 10–12 weeks)
+    section Phase 2 (Intern — 8 weeks)
     Foundation & Pilot        :2026-06, 2026-07
     Full Simulation & Sens    :2026-07, 2026-08
-    Publication Prep          :2026-08, 2026-09
+    Publication Prep          :2026-08, 2026-08
 ```
 
 ## Peer Review Summary
@@ -87,7 +87,7 @@ Full reviews:
 
 ## For the Intern
 
-This is a **10–12 week project**. See the [intern brief](./pick-a-winner-intern-brief.md) for the full timeline.
+See the [intern brief](./pick-a-winner-intern-brief.md) for the **8-week timeline**.
 
 1. **Read the [intern brief](./pick-a-winner-intern-brief.md) first** — it frames the problem and your task
 2. **Read the [literature review](./pick-a-winner-lit-review.md)** for the full picture
@@ -107,7 +107,7 @@ This is a **10–12 week project**. See the [intern brief](./pick-a-winner-inter
 - **Validate null first** — confirm exact 0.025 type I error before running alternatives
 - **Use `rpact` or `gsDesign`**, not custom multivariate normal integration
 - **Build the R package from day one** — `R/`, `inst/sims/`, `vignettes/`
-- **Save full state** (RNG seed, parameters, full results) on every run — debugging at week 9 will thank you
+- **Save full state** (RNG seed, parameters, full results) on every run — you'll need it for debugging down the line
 - **Expect 3–4 slow weeks** at the start — bugs in correlation structure, selection rules, and combination tests take time to track down
 - **Calibrate ρ(ORR, OS) from published meta-analyses** (Prasad et al. 2015), not raw historical data
 - **Include sensitivity for non-PH** (delayed separation typical in immuno-oncology) and safety-driven selection
@@ -117,7 +117,7 @@ This is a **10–12 week project**. See the [intern brief](./pick-a-winner-inter
 ✅ Literature review complete
 ✅ Expert peer reviews complete (Gemini + Claude)
 ✅ Intern onboarding complete
-✅ Intern brief aligned with 10–12 week plan
+✅ Intern brief aligned with 8-week plan
 ⬜ Simulation framework — Phase 2 (intern, Summer 2026)
 
 ## Related Repos

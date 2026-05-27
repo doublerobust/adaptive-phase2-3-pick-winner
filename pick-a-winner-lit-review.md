@@ -505,43 +505,41 @@ Phase 4: Comparison with standard approach
 - **Variance reduction:** Common random numbers across scenarios to isolate design effects
 - **Parallelization:** Use `parallel` or `future` packages for speed
 
-### 5.9 Intern Implementation Timeline (10–12 Weeks)
-
-This timeline replaces the original 8-week plan with a more realistic 10–12 week schedule that incorporates reviewer feedback. Key changes: starts with the foundational Stallard & Todd (2003) design, adds a dedicated pilot simulation phase, and allocates more time to complex tasks.
+### 5.9 Intern Implementation Timeline (8 Weeks)
 
 **Week 1–2: Literature foundation and first-principles implementation**
 - Read Stallard & Todd (2003) — the pick-the-winner foundation — and implement their two-arm, two-stage design in R from scratch using efficient score statistics
 - Read Bauer & Posch (2004) to understand the bias mechanism
 - Read Jenkins et al. (2011) for the cohort-separation solution
+- Also read: Sun et al. (2020), Zhang & Jin (2025), Zhong et al. (2025), Wang et al. (2023), Hua et al. (2026)
 - Validate: reproduce key numerical results from Stallard & Todd (2003) Table I or II
 - Use `gsDesign` and `rpact` for the group sequential guts (do not code alpha spending from scratch)
 
 **Week 3–4: Extend to ORR/DOR setting and pilot simulation**
-- Read Sun et al. (2020) and Zhang & Jin (2025) — the most directly applicable designs
 - Implement binary→binary simulation (ORR at interim, ORR at final) to validate the methodology without TTE complexity
 - **Pilot simulation phase:** Run a small grid (2–3 scenarios × 1,000 reps) to identify coding errors and computational bottlenecks before scaling up
 - Debug null scenarios first: confirm type I error = 0.025 ± MC error
 - Add the multi-state DGP with Weibull transitions (see §5.1)
 
-**Week 5–7: Full operating characteristics**
+**Week 5–6: Full operating characteristics**
 - Implement the full ORR→OS simulation with multi-state DGP and copula-based correlation
-- Run the complete simulation grid: Phase 1 (null), Phase 2 (alternative scenarios A–D), Phase 3 (sensitivity) (§5.6)
-- Scenarios to include: per-arm n=30–40 for smaller Phase II settings, HRs in 0.70–0.85 range for realistic solid-tumor effects
+- Run the complete simulation grid: null, alternatives (per-arm n=30–40, HRs 0.70–0.85)
 - Include safety-driven selection scenarios (§4.5)
 - Include non-PH scenarios (delayed separation typical of IO)
+- **Compare cohort-separation (Jenkins/Zhang) vs independent-increment (Hua) approach**
 - 5,000–10,000 reps per scenario; document Monte Carlo standard errors
 
-**Week 8–9: Sensitivity and robustness analyses**
-- Sensitivity analysis for ρ(ORR, OS) across {0.3, 0.5, 0.7} — calibrate from tumor-specific historical data (Prasad et al. 2015) rather than arbitrary values
+**Week 7: Sensitivity and robustness analyses**
+- Sensitivity analysis for ρ(ORR, OS) across {0.3, 0.5, 0.7} — calibrate from published meta-analytic estimates (Prasad et al. 2015) rather than arbitrary values
 - Compare pick-a-winner vs drop-the-losers vs traditional sequential Phase 2+3
 - Compare carry-one vs carry-two arms
-- Document the full simulation framework as an R Markdown vignette (build it as an R package from day one: `R/` for functions, `inst/sims/` for scripts, `vignettes/` for documentation)
 
-**Week 10–12: Drafting and publication prep**
+**Week 8: Drafting and publication prep**
 - Draft methodology section with simulation results
 - Prepare figures (power curves, PCS curves, FWER contours over ρ and Δ)
 - Write clean documentation for reproducibility (save every simulation run with RNG seed, full parameters, and full results — not just summary statistics)
-- Deliverable: R package + vignette + methodology note ready for internal review and potential publication
+- Build as R package: `R/` for functions, `inst/sims/` for scripts, `vignettes/` for documentation
+- Deliverable: R package + vignette + methodology note + 15-min presentation
 
 **Notes:**
 - Weeks 1–2 will feel slow — reproducing published results is harder than it looks. Each bug in the correlation structure, selection rule, or combination test produces wrong results that take days to debug. This is normal.
@@ -641,7 +639,7 @@ This timeline replaces the original 8-week plan with a more realistic 10–12 we
 
 ## Appendix A: Suggested Next Steps
 
-See §5.9 for the full 10–12 week implementation timeline. High-level summary:
+See §5.9 for the full 8-week implementation timeline. High-level summary:
 
 1. **Read the key papers** in priority order (per timeline): Stallard & Todd (2003) → Bauer & Posch (2004) → Jenkins et al. (2011) → Sun et al. (2020) → Zhang & Jin (2025)
 2. **Start with first-principles implementation** of Stallard & Todd's two-stage pick-the-winner, not Zhang & Jin's more complex design

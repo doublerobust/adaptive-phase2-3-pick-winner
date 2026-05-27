@@ -93,17 +93,15 @@ Bayesian approaches (Berry et al. 2002; Lee & Liu 2008) use predictive probabili
 
 ---
 
-## 5. Simulation Roadmap (10–12 Weeks)
-
-This timeline replaces the original 8-week plan with a more realistic 10–12 week schedule that incorporates reviewer feedback. Key changes: starts with the foundational Stallard & Todd (2003) design, adds a dedicated pilot simulation phase, and allocates more time to complex tasks.
+## 5. Simulation Roadmap (8 Weeks)
 
 | Week | Focus | Deliverable |
 |------|-------|-------------|
-| **1–2** | **Read (full PDFs in `refs/`):** Stallard & Todd (2003) [pick-winner foundation], Bauer & Posch (2004) [bias warning], Jenkins et al. (2011) [cohort-separation]. Implement their two-arm, two-stage design in R from scratch using efficient score statistics. Validate: reproduce key numerical results Stallard & Todd (2003) Table I or II. Use `gsDesign`/`rpact` for group sequential guts. | Paper notes + working Stallard & Todd reproduction; type I error ≈ 0.025 ± MC error. |
-| **3–4** | **Read:** Sun et al. (2020), Zhang & Jin (2025), Zhong et al. (2025) [ρ formula], Wang et al. (2023) [rank-based Dunnett], Hua et al. (2026). Implement binary→binary simulation (ORR at both stages) to validate methodology without TTE complexity. **Pilot simulation phase:** small grid (2–3 scenarios x 1k reps) to catch bugs and bottlenecks before scaling. Debug null scenarios first. Add multi-state DGP with Weibull transitions. | Working binary→binary simulation + pilot results. |
-| **5–7** | Full ORR→OS simulation with multi-state DGP and copula-based correlation. Run complete grid: null, alternatives A–D, sensitivity scenarios. Include safety-driven selection and non-PH (delayed separation) scenarios. Compare cohort-separation vs independent-increment approach. **Cohort-separation (Jenkins/Zhang) vs. independent-increment (Hua) — compare both.** 5k–10k reps per scenario. | Full simulation grid with MC standard errors. |
-| **8–9** | Sensitivity: ρ ∈ {0.3, 0.5, 0.7} calibrated from published meta-analytic estimates (Prasad et al. 2015). Compare pick-a-winner vs drop-the-losers vs traditional sequential Phase 2+3. Compare carry-one vs carry-two arms. Document framework as R Markdown vignette (build as R package from day one: `R/`, `inst/sims/`, `vignettes/`). | Sensitivity results + R package structure. |
-| **10–12** | Draft methodology section with simulation results. Figures (power curves, PCS curves, FWER contours over ρ and Δ). Clean reproducibility — save every run with RNG seed, full parameters, full results (not just summaries). Reproducible vignette. | R package + vignette + methodology note + 15-min presentation. |
+| **1–2** | **Read (full PDFs in `refs/`):** Stallard & Todd (2003) [pick-winner foundation], Bauer & Posch (2004) [bias warning], Jenkins et al. (2011) [cohort-separation], Sun et al. (2020) [2-in-1], Zhang & Jin (2025) [primary method], Zhong et al. (2025) [ρ formula], Wang et al. (2023) [rank-based Dunnett], Hua et al. (2026) [closed testing + GS]. Implement Stallard & Todd two-arm two-stage in R. Validate against published tables. Use `gsDesign`/`rpact` for group sequential guts. | Paper notes + working Stallard & Todd reproduction; type I error ≈ 0.025 ± MC error. |
+| **3–4** | Implement binary→binary simulation (ORR both stages) to validate methodology without TTE complexity. **Pilot phase:** small grid (2–3 scenarios × 1k reps) to catch bugs and bottlenecks. Debug null first. Add multi-state DGP with Weibull transitions. | Working binary→binary sim + pilot results. |
+| **5–6** | Full ORR→OS simulation with multi-state DGP and copula correlation. Run null + alternatives. Include safety-driven selection and non-PH (delayed separation). **Compare cohort-separation (Jenkins/Zhang) vs independent-increment (Hua).** 5k–10k reps per scenario. | Full simulation grid with MC standard errors. |
+| **7** | Sensitivity: ρ ∈ {0.3, 0.5, 0.7} calibrated from Prasad et al. (2015). Compare pick-a-winner vs drop-the-losers vs traditional Phase 2+3. Compare carry-one vs carry-two arms. | Sensitivity results. |
+| **8** | Draft methodology + figures (power curves, PCS curves, FWER contours). Reproducible vignette. Build as R package (`R/`, `inst/sims/`, `vignettes/`). | R package + vignette + 15-min presentation. |
 
 **Starting parameters:** K=2-3 arms, Stage 1 n=30-40/arm, total N=300-600, ORR_control=0.15, ORR_exp=0.25-0.45, OS HR=0.70-0.85, ρ ∈ {0.3, 0.5, 0.7}, interim at N=120. Save RNG seed + full parameters + full results for every run.
 
