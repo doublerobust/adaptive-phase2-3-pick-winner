@@ -51,11 +51,14 @@ The intern implementation spans **8 weeks** (Summer 2026):
 
 | Week | Focus | Deliverable |
 |------|-------|-------------|
-| 1–2 | Read core papers + implement Stallard & Todd two-arm two-stage from scratch. Validate against published tables. | Working reproduction; type I ≈ 0.025 |
-| 3–4 | Binary→binary simulation (ORR both stages). Pilot grid (2–3 × 1k reps). Add multi-state DGP. | Working sim + pilot results |
-| 5–6 | Full ORR→OS simulation. Null + alternatives. Safety-driven selection, non-PH. Compare cohort-separation vs independent-increment. | Full grid with MC errors |
-| 7 | Sensitivity: ρ calibration, pick-a-winner vs DTL vs traditional, carry-one vs carry-two. | Sensitivity results |
-| 8 | Methodology draft, figures, reproducible vignette + R package. | R package + vignette + 15-min talk |
+| 1 | Read Zhang & Jin (2025) [Eric's paper] + Jenkins (2011) + Bauer & Posch (2004). Implement two-arm INCT + cohort-separation from scratch. | Working INCT reproduction; type I ≈ 0.025 |
+| 2 | Validate TTE INCT against published tables. Add Dunnett for K=3 arms. Start R package. | K=3 Dunnett+INCT validated |
+| 3 | Multi-arm binary→binary simulation. Compare selection rules (pick-winner vs DTL). Pilot 1k reps. | Binary→binary pilot + selection comparison |
+| 4 | Multi-state DGP (ORR→OS). Pilot ORR→OS with ρ ∈ {0.3, 0.5, 0.7}. | Multi-state DGP + pilot results |
+| 5 | Full-scale ORR→OS simulation grid (5k-10k reps). | Full grid with MC standard errors |
+| 6 | Design comparisons: cohort-sep vs independent-increment, pick-winner vs DTL vs traditional, carry-one vs carry-two. | Design comparison results |
+| 7 | Sensitivity: ρ calibration, non-PH, safety override, sample size misspecification. | Sensitivity results |
+| 8 | R package, vignette, figures, 15-min presentation, written summary. | Complete R package + slides |
 
 ```mermaid
 gantt
@@ -66,9 +69,10 @@ title Project Roadmap
     Expert Peer Review        :done, 2026-05-20, 2026-05-21
     Intern Onboarding         :done, 2026-05, 2026-06
     section Phase 2 (Intern — 8 weeks)
-    Foundation & Pilot        :2026-06, 2026-07
-    Full Simulation & Sens    :2026-07, 2026-08
-    Publication Prep          :2026-08, 2026-08
+    Week 1-2: INCT Foundation   :2026-06-01, 14d
+    Week 3-4: Pilot & DGP       :2026-06-15, 14d
+    Week 5-6: Full Sim & Design :2026-06-29, 14d
+    Week 7-8: Sens & Pkg        :2026-07-13, 14d
 ```
 
 ## Peer Review Summary
@@ -79,7 +83,7 @@ Both **Gemini 2.5 Pro** and **Claude Opus 4** reviewed the literature review ind
 |------|---------|
 | Gemini | **Major Revision** — missing MAMS TTE references (Magirr 2012, Bauer & Posch 2004), structural fragmentation from v1→v2 merge |
 | Claude | **Minor Revision** — add Bayesian methods section, estimand alignment discussion, fix multi-state model spec |
-| Consensus | Strong foundation; both recommend starting simulation with Stallard & Todd (2003) rather than Zhang & Jin (2025) |
+| Consensus | Strong foundation. Intern team revised starting point: begin with Zhang & Jin (2025) INCT + cohort-separation (p-value combination, simpler), not Stallard & Todd (2003) MVN integration. Stallard & Todd is supplementary background. |
 
 Full reviews:
 - 📄 [Claude Opus 4 Review](./audit/claude-review-lit-v2.md)
@@ -92,20 +96,20 @@ See the [intern brief](./pick-a-winner-intern-brief.md) for the **8-week timelin
 1. **Read the [intern brief](./pick-a-winner-intern-brief.md) first** — it frames the problem and your task
 2. **Read the [literature review](./pick-a-winner-lit-review.md)** for the full picture
 3. **Read the peer reviews** in `audit/` — they contain practical simulation advice and critical caveats
-4. **Prioritized reading order** (per Claude):
-   1. Stallard & Todd (2003) — pick-a-winner foundation
-   2. Jenkins et al. (2011) — bias solution framework
-   3. Sun et al. (2020) — most directly applicable setting
-   4. Zhang & Jin (2025) — closest concrete design
-   5. Zhong et al. (2025) — ρ(ORR, OS) formulas
+4. **Prioritized reading order** (per mentor team):
+   1. ⭐ Zhang & Jin (2025) — Eric's paper, p-value combination, primary method
+   2. Jenkins et al. (2011) — cohort-separation blueprint
+   3. Bauer & Posch (2004) — understand why cohort-separation is necessary
+   4. Stallard & Todd (2003) — design logic (MVN background)
+   5. Sun et al. (2020) — most directly applicable setting
 
 ### Key Simulation Tips
 
-- **Start with Stallard & Todd reproduction** (Week 1–2) before attempting Zhang & Jin
+- **Start with INCT + cohort-separation** (Zhang & Jin 2025) — p-value combination is simpler than MVN integration. Stallard & Todd's MVN approach is supplementary.
 - **Binary→binary first** (ORR both stages) before adding TTE complexity
-- **Pilot phase after binary→binary** — run 2–3 scenarios × 1k reps to catch bugs and bottlenecks
+- **Pilot phase early** — run 2–3 scenarios × 1k reps after binary→binary to catch bugs
 - **Validate null first** — confirm exact 0.025 type I error before running alternatives
-- **Use `rpact` or `gsDesign`**, not custom multivariate normal integration
+- **Use `rpact`** — actively maintained, supports INCT, group sequential, and alpha spending natively
 - **Build the R package from day one** — `R/`, `inst/sims/`, `vignettes/`
 - **Save full state** (RNG seed, parameters, full results) on every run — you'll need it for debugging down the line
 - **Expect 3–4 slow weeks** at the start — bugs in correlation structure, selection rules, and combination tests take time to track down
